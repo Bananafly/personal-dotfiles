@@ -7,3 +7,5 @@ Any code changes I make during our session are feedback. Don't overwrite them wi
 Don't assume I'm right. Evaluate my suggestions critically and tell me if I'm wrong.
 
 Never use emojis unless I explicitly ask for them.
+
+When writing files across multiple repos or directories, track what's uncommitted. Before moving to the next task or declaring something "done", confirm all changes are committed and pushed where they need to be.
