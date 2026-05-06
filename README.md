@@ -1,38 +1,36 @@
 # Personal Dotfiles
 
-My personal configuration files, managed with [GNU Stow](https://www.gnu.org/software/stow/).
+Configuration files managed with [GNU Stow](https://www.gnu.org/software/stow/). Works on Mac and Linux.
 
-## What's included
+## Packages
 
-- **nvim** - Neovim configuration
-- **tmux** - Tmux configuration
-- **zsh** - Zsh shell configuration
-- **git** - Git configuration
+| Package | What it symlinks |
+|---------|-----------------|
+| `claude` | `~/.claude/CLAUDE.md`, `~/.claude/rules/{exploration,commands,investigation}.md` |
+| `nvim` | `~/.config/nvim/` |
+| `tmux` | `~/.tmux.conf` |
+| `zsh` | `~/.zshrc` |
+| `git` | `~/.gitconfig` |
 
-## Installation
+## Setup (Mac or any new machine)
 
 ```sh
-# Clone the repo
-git clone <your-github-url> ~/personal-dotfiles
-
-# Install stow if needed
+git clone <repo-url> ~/personal-dotfiles
+cd ~/personal-dotfiles
 brew install stow  # or: sudo apt install stow
 
-# Stow the packages you want
-cd ~/personal-dotfiles
-stow nvim tmux zsh git
+# Remove existing files that would conflict
+rm -f ~/.zshrc ~/.tmux.conf ~/.gitconfig
+
+stow claude zsh tmux nvim git
 ```
 
-## Usage
+## How it works
 
-Stow creates symlinks from this repo to your home directory:
-- `nvim/.config/nvim` → `~/.config/nvim`
-- `tmux/.tmux.conf` → `~/.tmux.conf`
-- `zsh/.zshrc` → `~/.zshrc`
-- `git/.gitconfig` → `~/.gitconfig`
+Stow creates symlinks from this repo into your home directory. Edits to repo files take effect immediately — no re-stow needed.
 
-To update configs, edit files in this repo and changes appear immediately.
+Re-run `stow <package>` only when you add new files to a package.
 
-## Work dotfiles
+## Work machine
 
-For work-specific configs (Amazon tools, etc.), see my separate work dotfiles repo.
+On an Amazon dev desktop, also clone and stow [work-dotfiles](https://code.amazon.com/packages/DotFiles-kreidema) which adds Amazon-specific shell config and Claude Code rules. The `.zshrc` here sources `~/.zshrc-work.zsh` if it exists.
