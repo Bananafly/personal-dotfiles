@@ -25,6 +25,19 @@ rm -f ~/.zshrc ~/.tmux.conf ~/.gitconfig
 stow claude zsh tmux nvim git
 ```
 
+## Post-stow setup
+
+### tmux plugins
+
+tmux config uses [TPM](https://github.com/tmux-plugins/tpm) for plugin management. After stowing:
+
+```sh
+git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+# Then in tmux: prefix + I (capital I) to install plugins
+# Or non-interactively:
+~/.tmux/plugins/tpm/bin/install_plugins
+```
+
 ## How it works
 
 Stow creates symlinks from this repo into your home directory. Edits to repo files take effect immediately — no re-stow needed.
