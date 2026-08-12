@@ -31,3 +31,9 @@ export RPROMPT=
 
 # Source work-specific config if it exists
 [ -f ~/.zshrc-work.zsh ] && source ~/.zshrc-work.zsh
+
+# Routes Claude Code to a per-builder Bedrock account (avoids shared-account 429s).
+# Opus 5 works here; Fable 5 does NOT (silently falls back to Opus 4.8) because
+# Builder Accounts lack the provider_data_share retention mode Fable requires.
+# Comment this out to reach Fable 5 on the central account, at the cost of throttling.
+export USE_BUILDER_ACCOUNT=1
