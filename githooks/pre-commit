@@ -1,0 +1,28 @@
+#!/bin/sh
+# Keep codex/.codex/AGENTS.md in sync with its Claude sources.
+#
+# AGENTS.md is generated from claude/.claude/CLAUDE.md and
+# claude/.claude/rules/*.md. Relying on whoever edits a rule to remember the
+# build step does not work, so regenerate here and stage the result. The
+# committed tree is then always self-consistent.
+#
+# Enabled per machine with:  git config core.hooksPath githooks
+
+set -eu
+
+# Derive the repo from this script's own path rather than the cwd, so the hook
+# behaves the same however git invokes it.
+root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+
+# Nothing to do unless a source of AGENTS.md is part of this commit.
+if ! git -C "$root" diff --cached --name-only |
+	grep -qE '^claude/\.claude/(CLAUDE\.md|rules/.*\.md)$'; then
+	exit 0
+fi
+
+"$root/bin/build-codex-agents.sh" >/dev/null
+
+if ! git -C "$root" diff --quiet -- codex/.codex/AGENTS.md; then
+	git -C "$root" add -- codex/.codex/AGENTS.md
+	echo "pre-commit: regenerated codex/.codex/AGENTS.md and staged it"
+fi

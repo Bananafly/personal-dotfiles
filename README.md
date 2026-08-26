@@ -42,7 +42,15 @@ Instructions need a build step, because the two agents disagree on shape. Claude
 bin/build-codex-agents.sh
 ```
 
-**Re-run it after editing `CLAUDE.md` or anything under `claude/.claude/rules/`**, or Codex will keep serving the previous version. The Claude files are canonical; the generated `AGENTS.md` is not to be hand-edited.
+The Claude files are canonical; the generated `AGENTS.md` is not to be hand-edited.
+
+You should not have to remember this. `githooks/pre-commit` regenerates and stages `AGENTS.md` whenever a commit touches `CLAUDE.md` or a rule, so the committed tree is always self-consistent. It needs enabling once per machine, since `.git/hooks` is not tracked:
+
+```sh
+git config core.hooksPath githooks
+```
+
+Run the script by hand only if you want the working tree updated before committing.
 
 Verify what Codex actually loads without spending a model call:
 
@@ -73,6 +81,9 @@ stow claude zsh tmux nvim git codex
 # Codex keeps skills in its own directory, so link the same folders there too
 mkdir -p ~/.codex/skills
 stow -d ~/personal-dotfiles/claude/.claude -t ~/.codex/skills skills
+
+# Keep the generated Codex AGENTS.md in sync automatically
+git config core.hooksPath githooks
 ```
 
 If Claude Code has already run on the machine, `~/.claude/` may hold its own `CLAUDE.md` or skills, and `stow claude` will abort with "existing target is not owned by stow". Symlinks that already point into this repo are safe to delete before re-stowing; real files are not, so move those aside and merge them by hand.
