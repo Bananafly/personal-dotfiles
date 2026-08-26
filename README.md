@@ -7,6 +7,7 @@ Configuration files managed with [GNU Stow](https://www.gnu.org/software/stow/).
 | Package | What it symlinks |
 |---------|-----------------|
 | `claude` | `~/.claude/CLAUDE.md`, `~/.claude/rules/*.md`, `~/.claude/skills/*/` |
+| `codex` | `~/.codex/AGENTS.md` (generated, see [Codex](#codex)) |
 | `nvim` | `~/.config/nvim/` |
 | `tmux` | `~/.tmux.conf` |
 | `zsh` | `~/.zshrc` |
@@ -31,6 +32,32 @@ Notes:
 - `interrogate` and pstack's platform notes link to `../poteto-mode/references/codex-tools.md`, which is not installed. Only relevant on non-Claude runtimes.
 - `principle-never-block-on-the-human` deliberately replaces the "if you're stuck or unsure, stop and ask" line that used to be in `CLAUDE.md`. Its own Boundaries section still requires confirmation for irreversible actions.
 
+## Codex
+
+Codex uses the same `SKILL.md` format as Claude Code, so the skills above are shared rather than duplicated: `~/.codex/skills/<name>` symlinks to the same folder in `claude/.claude/skills/`. One canonical copy, both agents.
+
+Instructions need a build step, because the two agents disagree on shape. Claude Code auto-loads `CLAUDE.md` plus every file in `rules/`; Codex reads a single global `AGENTS.md` from `$CODEX_HOME` and has no `rules/` equivalent. So `bin/build-codex-agents.sh` flattens `claude/.claude/CLAUDE.md` and `claude/.claude/rules/*.md` into `codex/.codex/AGENTS.md`:
+
+```sh
+bin/build-codex-agents.sh
+```
+
+**Re-run it after editing `CLAUDE.md` or anything under `claude/.claude/rules/`**, or Codex will keep serving the previous version. The Claude files are canonical; the generated `AGENTS.md` is not to be hand-edited.
+
+Verify what Codex actually loads without spending a model call:
+
+```sh
+codex debug prompt-input | grep -c 'Never use emojis'   # rules reached the prompt
+codex debug prompt-input | grep -o 'skills/[a-z-]*/SKILL.md' | sort -u
+```
+
+Precedence, confirmed on Codex 0.146: `~/.codex/AGENTS.md` is loaded as the global instructions, and a `~/AGENTS.md` would be appended after a `--- project-doc ---` separator rather than replacing it. Only the `$CODEX_HOME` one is managed here.
+
+Two things do not carry over:
+
+- **The work-dotfiles rules** (`brazil.md`, `amazon-*.md`, `codepipeline-research.md`) are excluded on purpose. They are Amazon-internal and should not be vendored into this repo, which pushes to GitHub. To make them apply in Codex, append them to `$CODEX_HOME/AGENTS.md` from work-dotfiles instead.
+- **`disable-model-invocation` is Claude-only.** Codex lists every skill it finds, so `grilling`, `handoff`, and `teach` can fire on their own there even though they are gated under Claude Code.
+
 ## Setup (Mac or any new machine)
 
 ```sh
@@ -41,7 +68,11 @@ brew install stow  # or: sudo apt install stow
 # Remove existing files that would conflict
 rm -f ~/.zshrc ~/.tmux.conf ~/.gitconfig
 
-stow claude zsh tmux nvim git
+stow claude zsh tmux nvim git codex
+
+# Codex keeps skills in its own directory, so link the same folders there too
+mkdir -p ~/.codex/skills
+stow -d ~/personal-dotfiles/claude/.claude -t ~/.codex/skills skills
 ```
 
 If Claude Code has already run on the machine, `~/.claude/` may hold its own `CLAUDE.md` or skills, and `stow claude` will abort with "existing target is not owned by stow". Symlinks that already point into this repo are safe to delete before re-stowing; real files are not, so move those aside and merge them by hand.
