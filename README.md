@@ -6,11 +6,30 @@ Configuration files managed with [GNU Stow](https://www.gnu.org/software/stow/).
 
 | Package | What it symlinks |
 |---------|-----------------|
-| `claude` | `~/.claude/CLAUDE.md`, `~/.claude/rules/{exploration,commands,investigation}.md` |
+| `claude` | `~/.claude/CLAUDE.md`, `~/.claude/rules/*.md`, `~/.claude/skills/*/` |
 | `nvim` | `~/.config/nvim/` |
 | `tmux` | `~/.tmux.conf` |
 | `zsh` | `~/.zshrc` |
 | `git` | `~/.gitconfig` |
+
+## Claude skills
+
+`claude/.claude/skills/` holds skills that apply on every machine. `anki-card` is written here. The rest are vendored copies of third-party skills, with local edits, so they need a manual re-pull to update.
+
+| Skill(s) | Upstream | Local edits |
+|---|---|---|
+| `anki-card` | written here | n/a |
+| `unslop`, `deslop`, `interrogate`, `swarm`, `blast-radius`, `what-did-i-get-done`, `principle-*` | [pstack](https://github.com/michael-denyer/pstack-claude) (MIT), a Claude Code port of `cursor/plugins/pstack` | none, upstream verbatim |
+| `handoff` | [mattpocock/skills](https://github.com/mattpocock/skills) | writes to `~/.claude/handoffs/` instead of `$TMPDIR`, which macOS reaps between boots |
+| `grilling` | [mattpocock/skills](https://github.com/mattpocock/skills) | emoji stripped from the round format; `disable-model-invocation: true` added so it can't fire unprompted |
+| `teach` | [mattpocock/skills](https://github.com/mattpocock/skills) | refuses to scaffold into `$HOME`, a repo, or a Brazil workspace; uses `~/learning/<topic>/` instead |
+
+Notes:
+
+- The `principle-*` skills and `unslop` are model-invoked, not user-invoked: they fire on their trigger conditions rather than being typed. `handoff`, `grilling`, and `teach` are the reverse, invoked by name.
+- `blast-radius` references pstack's `why` skill, which is not installed here (it depends on `gh`, which is absent on the work laptop). It degrades to doing its own git anchoring.
+- `interrogate` and pstack's platform notes link to `../poteto-mode/references/codex-tools.md`, which is not installed. Only relevant on non-Claude runtimes.
+- `principle-never-block-on-the-human` deliberately replaces the "if you're stuck or unsure, stop and ask" line that used to be in `CLAUDE.md`. Its own Boundaries section still requires confirmation for irreversible actions.
 
 ## Setup (Mac or any new machine)
 
@@ -24,6 +43,8 @@ rm -f ~/.zshrc ~/.tmux.conf ~/.gitconfig
 
 stow claude zsh tmux nvim git
 ```
+
+If Claude Code has already run on the machine, `~/.claude/` may hold its own `CLAUDE.md` or skills, and `stow claude` will abort with "existing target is not owned by stow". Symlinks that already point into this repo are safe to delete before re-stowing; real files are not, so move those aside and merge them by hand.
 
 ## Post-stow setup
 
